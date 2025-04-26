@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:retail_app/models/product.dart';
+import 'package:retail_app/providers/product_provider.dart';
 import 'package:retail_app/utils/constants.dart';
 
 class ProductItem extends StatelessWidget {
@@ -31,7 +34,7 @@ class ProductItem extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Product image placeholder
+            // Product image or icon
             Container(
               width: 70,
               height: 70,
@@ -39,11 +42,29 @@ class ProductItem extends StatelessWidget {
                 color: Colors.grey[200],
                 borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(
-                getIconForCategory(product.category),
-                size: 35,
-                color: AppColors.primary,
-              ),
+              child: product.imageUrl.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: CachedNetworkImage(
+                      imageUrl: product.imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) => Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      ),
+                      errorWidget: (context, url, error) => Icon(
+                        getIconForCategory(product.category),
+                        size: 35,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  )
+                : Icon(
+                    getIconForCategory(product.category),
+                    size: 35,
+                    color: AppColors.primary,
+                  ),
             ),
             SizedBox(width: 15),
             
@@ -115,9 +136,38 @@ class ProductItem extends StatelessWidget {
                   icon: Icon(Icons.delete, color: Colors.red),
                   onPressed: () {
                     // Show delete confirmation
-                    // This would be implemented in the provider
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Suppression non implémentée')),
+                    showDialog(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: Text('Confirmation'),
+                        content: Text('Voulez-vous vraiment supprimer ce produit?'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(ctx).pop(),
+                            child: Text('Annuler'),
+                          ),
+                          TextButton(
+                            onPressed: () async {
+                              Navigator.of(ctx).pop();
+                              try {
+                                await Provider.of<ProductProvider>(context, listen: false)
+                                    .deleteProduct(product.id);
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Produit supprimé avec succès')),
+                                );
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text('Erreur lors de la suppression')),
+                                );
+                              }
+                            },
+                            child: Text('Supprimer'),
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.red,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   },
                 ),

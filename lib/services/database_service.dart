@@ -99,6 +99,12 @@ class DatabaseService {
       await _saveData();
     }
   }
+  
+  static Future<void> deleteProduct(String productId) async {
+    await init();
+    _data['products'].removeWhere((p) => p['id'] == productId);
+    await _saveData();
+  }
 
   // CUSTOMERS
   static Future<List<Customer>> getCustomers() async {
@@ -110,6 +116,21 @@ class DatabaseService {
   static Future<void> addCustomer(Customer customer) async {
     await init();
     _data['customers'].add(customer.toJson());
+    await _saveData();
+  }
+  
+  static Future<void> updateCustomer(Customer customer) async {
+    await init();
+    final index = _data['customers'].indexWhere((c) => c['id'] == customer.id);
+    if (index != -1) {
+      _data['customers'][index] = customer.toJson();
+      await _saveData();
+    }
+  }
+  
+  static Future<void> deleteCustomer(String customerId) async {
+    await init();
+    _data['customers'].removeWhere((c) => c['id'] == customerId);
     await _saveData();
   }
 

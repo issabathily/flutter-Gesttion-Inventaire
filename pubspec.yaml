@@ -15,6 +15,9 @@ dependencies:
   fl_chart: ^0.63.0
   cupertino_icons: ^1.0.5
   uuid: ^3.0.7
+  image_picker: ^1.0.4
+  image_picker_for_web: ^3.0.1
+  cached_network_image: ^3.3.0
 
 dev_dependencies:
   flutter_test:

@@ -127,4 +127,41 @@ class ProductProvider with ChangeNotifier {
       throw Exception('Failed to update product');
     }
   }
+  
+  // Delete product
+  Future<void> deleteProduct(String productId) async {
+    try {
+      // Remove from local list
+      _products.removeWhere((p) => p.id == productId);
+      
+      // Remove from database
+      await DatabaseService.deleteProduct(productId);
+      notifyListeners();
+    } catch (e) {
+      print('Error deleting product: $e');
+      throw Exception('Failed to delete product');
+    }
+  }
+  
+  // Add new product with image
+  Future<void> addProductWithImage(String name, String category, double price, int stock, String details, String imageUrl) async {
+    final product = Product(
+      id: Uuid().v4(),
+      name: name,
+      category: category,
+      price: price,
+      stock: stock,
+      imageUrl: imageUrl,
+      details: details,
+    );
+
+    try {
+      await DatabaseService.addProduct(product);
+      _products.add(product);
+      notifyListeners();
+    } catch (e) {
+      print('Error adding product with image: $e');
+      throw Exception('Failed to add product with image');
+    }
+  }
 }
